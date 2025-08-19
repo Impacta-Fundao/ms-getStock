@@ -39,4 +39,56 @@ class SellerController:
         
         except MercadoException as e:
             return make_response(jsonify({"message": f"Erro ao listar mercados: {str(e.msg)}"}), 500)
-
+        
+    @staticmethod
+    def get_seller_id(mercado_id):
+        try:
+            data = SellerService.get_id(mercado_id)
+            if not data:
+                return make_response(jsonify({"message": "Não existe esse mercado cadastrado"}),400 )
+            return make_response(jsonify({"data": data}), 200)
+            
+        except MercadoException as e:
+            return make_response(jsonify({"message": f"Erro ao buscar mercado: {str(e.msg)} | {e}"}), 500)
+    
+    @staticmethod
+    def delete_seller(mercado_id):
+        try:
+            data = SellerService.deletar_mercado(mercado_id)
+            if not data:
+                return make_response(jsonify({"message": "Não existe esse mercado cadastrado"}),400 )
+            return make_response(jsonify({"data": data}), 200)
+            
+        except MercadoException as e:
+            return make_response(jsonify({"message": f"Erro ao deletar mercado: {str(e.msg)} | {e}"}), 500)
+        
+    @staticmethod
+    def put_seller(mercado_id):
+        try:
+            resp = request.get_json()
+            
+            if not resp:
+                return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
+            
+            updateSeller = SellerService.atualizar_mercado(mercado_id,resp)
+            
+            return make_response(jsonify({"data": updateSeller, "message": "Atualizado com sucesso"}), 200)
+            
+        except MercadoException as e:
+            return make_response(jsonify({"message": f"{e.msg} | {e}"}),400 )
+    
+    
+    @staticmethod
+    def patch_seller(mercado_id):
+        try:
+            resp = request.get_json()
+            
+            if not resp:
+                return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
+            
+            updateSeller = SellerService.atualizar_patch_mercado(mercado_id,resp)
+            
+            return make_response(jsonify({"data": updateSeller, "message": "Atualizado com sucesso"}))
+            
+        except MercadoException as e:
+            return make_response(jsonify({"message": f"{e.msg} | {e}"}),400 )
