@@ -30,4 +30,13 @@ class SellerController:
         except MercadoException as e:
             return jsonify({"message": f"Erro na requisição {e.msg}"}, 500)
         
-    
+    @staticmethod
+    def get_sellers():
+        try:
+            data = SellerService.listar_mercados()
+            return make_response(jsonify({"data": data}), 200)
+            
+        
+        except MercadoException as e:
+            return make_response(jsonify({"message": f"Erro ao listar mercados: {str(e.msg)}"}), 500)
+
