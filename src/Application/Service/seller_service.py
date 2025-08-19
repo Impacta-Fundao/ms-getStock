@@ -30,3 +30,28 @@ class SellerService:
         } for mercado in data]
         
         return mercados_json
+    
+    @staticmethod
+    def get_id(mercado_id):
+        data = Mercado.query.get(mercado_id)
+
+        if data is None: raise MercadoException("Esse mercado não está cadastrado")
+        mercados_json = {
+            'id': data.id,
+            'nome': data.nome,
+            'cnpj': data.cnpj,
+            'email': data.email,
+            'celular': data.celular,
+            'status': data.status,
+        } 
+        
+        return mercados_json
+    
+    @staticmethod
+    def deletar_mercado(mercado_id):
+        data = Mercado.query.get(mercado_id)
+        if data is None:return None
+        
+        db.session.delete(data)
+        db.session.commit()
+        return {"message": "Mercado deletado com sucesso"}
