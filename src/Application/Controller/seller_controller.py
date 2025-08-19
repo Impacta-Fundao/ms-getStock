@@ -13,7 +13,7 @@ class SellerController:
             email=data.get('email') if data.get('email') else None
             celular=data.get('celular' if data.get('celular') else None)
             senha=data.get('senha') if data.get('senha') else None
-            status=data.get(False)
+            status=False
             
             requiredField.append({"nome": nome, "cnpj":cnpj, "email": email, "celular":celular, "senha":senha,})
             for field in requiredField:
