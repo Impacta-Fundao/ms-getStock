@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, create_access_token
+from flask_jwt_extended import create_access_token
+from src.Application.Service.seller_service import ...
 
 seller_jwt_bp = Blueprint('seller_jwt', __name__)
 
