@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, make_response
+from flask_jwt_extended import jwt_required
 from src.Application.Controller.seller_controller import SellerController
 
 mercado_bp = Blueprint('mercado', __name__) 
@@ -12,6 +13,7 @@ def init_route(app):
         }), 200)
 
 @mercado_bp.route('/mercados', methods=['GET'])
+@jwt_required()
 def list_seller():
     return SellerController.get_sellers()
 
