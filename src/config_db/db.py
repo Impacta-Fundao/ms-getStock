@@ -10,7 +10,7 @@ class Config_db:
     DB_PORT= os.getenv('DEV_DB_PORT')
     DB_NAME= os.getenv('DEV_DB_NAME')
     SQLALCHEMY_DATABASE_URI = f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 class Config_db_hml:
     
     DB_USER = os.getenv('HML_DB_USER')
@@ -19,6 +19,7 @@ class Config_db_hml:
     DB_PORT= os.getenv('HML_DB_PORT')
     DB_NAME= os.getenv('HML_DB_NAME')
     SQLALCHEMY_DATABASE_URI = f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 class Config_db_prd:
     
@@ -28,4 +29,5 @@ class Config_db_prd:
     DB_PORT= os.getenv('PRD_DB_PORT')
     DB_NAME= os.getenv('PRD_DB_NAME')
     SQLALCHEMY_DATABASE_URI = f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     
