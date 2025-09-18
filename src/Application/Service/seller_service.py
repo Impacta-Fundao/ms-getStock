@@ -13,13 +13,14 @@ class SellerService:
     @staticmethod
     def authenticate(username, password):
         seller = Mercado.query.filter_by(email=username).first()
-        if seller and bcrypt.checkpw(password.encode('utf-8', seller.senha)):
+        senha = seller.senha
+        if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
             return seller
         return None
     
     @staticmethod
     def create_seller(nome,cnpj,email,celular,senha,status ):
-        bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
+        senha = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         new_seller = SellerDomain(nome,cnpj,email,celular,senha,status)
         seller = Mercado(nome=new_seller.nome,cnpj=new_seller.cnpj,email=new_seller.email,celular=new_seller.celular,senha=new_seller.senha,status=new_seller.status)
         db.session.add(seller)
@@ -35,7 +36,7 @@ class SellerService:
             'cnpj': mercado.cnpj,
             'email': mercado.email,
             'celular': mercado.celular,
-            'status': mercado.status, 
+            'status': mercado.status
         } for mercado in data]
         
         return mercados_json
