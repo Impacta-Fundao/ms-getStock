@@ -9,7 +9,7 @@ class Mercado(db.Model):
     cnpj = (Column(String(14), nullable=False))
     email = (Column(String(255), nullable=False))
     celular = (Column(String(11), nullable=False))
-    senha = (Column(String(50), nullable=False))
+    senha = (Column(String(100), nullable=False))
     status = (Column(Boolean, nullable=False))
     
     def to_dict(self):
