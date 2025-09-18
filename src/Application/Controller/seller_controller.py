@@ -8,14 +8,14 @@ class SellerController:
             data = request.get_json()
             requiredField = []
             
-            nome=data['nome'] if data.get('nome') else None
-            cnpj=data.get('cnpj') if data.get('cnpj') else None
-            email=data.get('email') if data.get('email') else None
-            celular=data.get('celular' if data.get('celular') else None)
-            senha=data.get('senha') if data.get('senha') else None
-            status=False
+            nome = data['nome'] if data.get('nome') else None
+            cnpj = data.get('cnpj') if data.get('cnpj') else None
+            email = data.get('email') if data.get('email') else None
+            celular = data.get('celular') if data.get('celular') else None
+            senha = data.get('senha') if data.get('senha') else None
+            status = False
             
-            requiredField.append({"nome": nome, "cnpj":cnpj, "email": email, "celular":celular, "senha":senha,})
+            requiredField.append({"nome": nome, "cnpj":cnpj, "email": email, "celular":celular, "senha":senha})
             for field in requiredField:
                 for k,v in field.items():
                     if v is None:
@@ -49,7 +49,7 @@ class SellerController:
             return make_response(jsonify({"data": data}), 200)
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"Erro ao buscar mercado: {str(e.msg)} | {e}"}), 500)
+            return make_response(jsonify({"message": f"Erro ao buscar mercado: {str(e.msg)}"}), 500)
     
     @staticmethod
     def delete_seller(mercado_id):
@@ -60,7 +60,7 @@ class SellerController:
             return make_response(jsonify({"data": data}), 200)
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"Erro ao deletar mercado: {str(e.msg)} | {e}"}), 500)
+            return make_response(jsonify({"message": f"Erro ao deletar mercado: {str(e.msg)}"}), 500)
         
     @staticmethod
     def put_seller(mercado_id):
@@ -75,7 +75,7 @@ class SellerController:
             return make_response(jsonify({"data": updateSeller, "message": "Atualizado com sucesso"}), 200)
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"{e.msg} | {e}"}),400 )
+            return make_response(jsonify({"message": f"{e.msg}"}),400 )
     
     
     @staticmethod
@@ -91,4 +91,4 @@ class SellerController:
             return make_response(jsonify({"data": updateSeller, "message": "Atualizado com sucesso"}))
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"{e.msg} | {e}"}),400 )
+            return make_response(jsonify({"message": f"{e.msg}"}),400 )
