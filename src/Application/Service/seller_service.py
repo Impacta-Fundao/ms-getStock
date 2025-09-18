@@ -19,7 +19,7 @@ class SellerService:
         return None
     
     @staticmethod
-    def create_seller(nome,cnpj,email,celular,senha,status ):
+    def create_seller(nome,cnpj,email,celular,senha,status):
         senha = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         new_seller = SellerDomain(nome,cnpj,email,celular,senha,status)
         seller = Mercado(nome=new_seller.nome,cnpj=new_seller.cnpj,email=new_seller.email,celular=new_seller.celular,senha=new_seller.senha,status=new_seller.status)
@@ -63,7 +63,11 @@ class SellerService:
         if data is None:
             return None
         else:
-            
+            if data.status is False:
+                return {"message": "O mercado já se encontra inativado"}
+            else:
+                data.status = False
+                
             db.session.commit()
             return {"message": "Mercado inativado com sucesso"}
     
