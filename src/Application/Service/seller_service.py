@@ -1,6 +1,7 @@
 from src.Domain.seller import SellerDomain
 from src.Infrastructure.models.seller import Mercado
 from src import db
+import bcrypt
 
 class MercadoException(Exception):
     def __init__(self, msg):
@@ -12,12 +13,17 @@ class SellerService:
     @staticmethod
     def authenticate(username, password):
         seller = Mercado.query.filter_by(email=username).first()
-        if seller and seller.senha == password:
+        senha = seller.senha
+        if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
             return seller
         return None
     
     @staticmethod
     def create_seller(nome,cnpj,email,celular,senha,status ):
+        seller_existente = Mercado.query.filter_by(email=email).first()
+        if seller_existente:
+            raise MercadoException("Email já cadastrado")
+        senha = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         new_seller = SellerDomain(nome,cnpj,email,celular,senha,status)
         seller = Mercado(nome=new_seller.nome,cnpj=new_seller.cnpj,email=new_seller.email,celular=new_seller.celular,senha=new_seller.senha,status=new_seller.status)
         db.session.add(seller)
@@ -33,7 +39,7 @@ class SellerService:
             'cnpj': mercado.cnpj,
             'email': mercado.email,
             'celular': mercado.celular,
-            'status': mercado.status, 
+            'status': mercado.status
         } for mercado in data]
         
         return mercados_json
@@ -57,11 +63,16 @@ class SellerService:
     @staticmethod
     def deletar_mercado(mercado_id):
         data = Mercado.query.get(mercado_id)
-        if data is None:return None
-        
-        db.session.delete(data)
-        db.session.commit()
-        return {"message": "Mercado deletado com sucesso"}
+        if data is None:
+            return None
+        else:
+            if data.status is False:
+                return {"message": "O mercado já se encontra inativado"}
+            else:
+                data.status = False
+                
+            db.session.commit()
+            return {"message": "Mercado inativado com sucesso"}
     
     @staticmethod
     def atualizar_mercado(mercado_id, mercado_data):
