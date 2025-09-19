@@ -8,9 +8,7 @@ def init_route(app):
     app.register_blueprint(mercado_bp)
     @app.route('/', methods=["GET"])
     def raiz():
-        return make_response(jsonify({
-            "message": "API - OK"
-        }), 200)
+        return jsonify({"message": "API OK"}), 200
 
 @mercado_bp.route('/mercados', methods=['GET'])
 @jwt_required()
@@ -39,4 +37,3 @@ def update_seller(id):
 @jwt_required()
 def update_patch_seller(id):
     return SellerController.patch_seller(id)
-    
