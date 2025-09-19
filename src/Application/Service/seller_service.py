@@ -66,7 +66,11 @@ class SellerService:
         if data is None:
             return None
         else:
-            
+            if data.status is False:
+                return {"message": "O mercado já se encontra inativado"}
+            else:
+                data.status = False
+                
             db.session.commit()
             return {"message": "Mercado inativado com sucesso"}
     
