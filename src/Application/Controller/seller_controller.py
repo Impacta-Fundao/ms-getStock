@@ -28,7 +28,10 @@ class SellerController:
                 "message": "Criado com sucesso"
                     }), 200)
         except MercadoException as e:
-            return jsonify({"message": f"Erro na requisição {e.msg}"}, 500)
+            return make_response(jsonify({"message": f"Erro na requisição: {e.msg}"}),500)
+        
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}),500)
         
     @staticmethod
     def get_sellers():

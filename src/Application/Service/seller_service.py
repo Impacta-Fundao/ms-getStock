@@ -20,6 +20,9 @@ class SellerService:
     
     @staticmethod
     def create_seller(nome,cnpj,email,celular,senha,status ):
+        seller_existente = Mercado.query.filter_by(email=email).first()
+        if seller_existente:
+            raise MercadoException("Email já cadastrado")
         senha = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         new_seller = SellerDomain(nome,cnpj,email,celular,senha,status)
         seller = Mercado(nome=new_seller.nome,cnpj=new_seller.cnpj,email=new_seller.email,celular=new_seller.celular,senha=new_seller.senha,status=new_seller.status)
