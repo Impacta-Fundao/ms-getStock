@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, jsonify, request
 from twilio.rest import Client
+from src.Application.Service.seller_service import SellerService
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,31 +18,42 @@ send_whatsapp_bp = Blueprint('send_whatsapp', __name__)
 def enviar_codigo():
     celular = request.json.get("celular", None)
 
-    try:
-        verification = client.verify.v2.services(service_sid
-        ).verifications.create(
-                to=f"+55{celular}",
-                channel="sms"
-        )
-        return jsonify({"mensagem": "Código enviado com sucesso.", "status": verification.status}), 200
-    except Exception as e:
-        return jsonify({"erro": str(e)}), 400
+    verificar_num = SellerService.verificar_numero(celular)
+
+    if verificar_num:
+        try:
+            verification = client.verify.v2.services(service_sid
+            ).verifications.create(
+                    to=f"+55{celular}",
+                    channel="sms"
+            )
+            return jsonify({"mensagem": "Código enviado com sucesso.", "status": verification.status}), 200
+        except:
+            return jsonify({"erro": "Erro desconhecido, tente novamente"}), 400
+    else:
+        return jsonify({"erro": "O número informado não existe no banco de dados"}), 400
+
 
 @send_whatsapp_bp.route('/verificar_codigo', methods=['POST'])
 def verificar_codigo():
     celular = request.json.get("celular", None)
     codigo = request.json.get("codigo", None)
 
-    try:
-        verification_check = client.verify.v2.services(service_sid
-        ).verification_checks.create(
-            to=f"+55{celular}",
-            code=codigo
-        )
+    verificar_num = SellerService.verificar_numero(celular)
 
-        if verification_check.status == "approved":
-            return jsonify({"mensagem": "Verificação concluída com sucesso"}), 200
-        else:
-            return jsonify({"mensagem": "Código inválido ou expirado"}), 401
-    except:
-        return jsonify({"mensagem": "Nenhum código foi solicitado ou você ja verificou"}), 400
+    if verificar_num:
+        try:
+            verification_check = client.verify.v2.services(service_sid
+            ).verification_checks.create(
+                to=f"+55{celular}",
+                code=codigo
+            )
+
+            if verification_check.status == "approved":
+                return jsonify({"mensagem": "Verificação concluída com sucesso", "status": verification_check.status}), 200
+            else:
+                return jsonify({"mensagem": "Código inválido ou expirado"}), 401
+        except:
+            return jsonify({"mensagem": "Nenhum código foi solicitado ou você ja verificou"}), 400
+    else:
+        return jsonify({"erro": "O número informado não existe no banco de dados"}), 400

@@ -11,14 +11,6 @@ class MercadoException(Exception):
 class SellerService:
     
     @staticmethod
-    def authenticate(username, password):
-        seller = Mercado.query.filter_by(email=username).first()
-        senha = seller.senha
-        if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
-            return seller
-        return None
-    
-    @staticmethod
     def create_seller(seller_data: SellerDomain):
         seller_existente = Mercado.query.filter_by(email=seller_data.email).first()
         if seller_existente:
@@ -147,3 +139,17 @@ class SellerService:
             'celular': data.celular,
             'status': data.status
         }
+
+    @staticmethod
+    def authenticate(username, password):
+        seller = Mercado.query.filter_by(email=username).first()
+        senha = seller.senha
+        if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
+            return seller
+        return None
+    
+    @staticmethod
+    def verificar_numero(numero):
+        procurar_bd = Mercado.query.filter_by(celular=numero).first()
+        if procurar_bd:
+            return True
