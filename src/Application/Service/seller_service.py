@@ -67,12 +67,12 @@ class SellerService:
             return None
         else:
             if data.status is False:
-                return {"message": "O mercado já se encontra inativado"}
+                return {"mensagem": "O mercado já se encontra inativado"}
             else:
                 data.status = False
                 
             db.session.commit()
-            return {"message": "Mercado inativado com sucesso"}
+            return {"mensagem": "Mercado inativado com sucesso"}
     
     @staticmethod
     def atualizar_mercado(mercado_id, mercado_data):
@@ -146,10 +146,20 @@ class SellerService:
         senha = seller.senha
         if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
             return seller
-        return None
     
     @staticmethod
     def verificar_numero(numero):
-        procurar_bd = Mercado.query.filter_by(celular=numero).first()
-        if procurar_bd:
+        procurar_celular = Mercado.query.filter_by(celular=numero).first()
+        if not procurar_celular:
+            return None
+        if procurar_celular.status is False:
             return True
+        else:
+            return False
+
+    @staticmethod
+    def ativar_usuario(numero):
+        data = Mercado.query.filter_by(celular=numero).first()
+        data.status = True
+        db.session.commit()
+        return data.status

@@ -30,6 +30,8 @@ def enviar_codigo():
             return jsonify({"mensagem": "Código enviado com sucesso.", "status": verification.status}), 200
         except:
             return jsonify({"erro": "Erro desconhecido, tente novamente"}), 400
+    elif verificar_num is False:
+        return jsonify({"erro": "O usuário já se encontra ativado"}), 400
     else:
         return jsonify({"erro": "O número informado não existe no banco de dados"}), 400
 
@@ -50,10 +52,13 @@ def verificar_codigo():
             )
 
             if verification_check.status == "approved":
-                return jsonify({"mensagem": "Verificação concluída com sucesso", "status": verification_check.status}), 200
+                ativar_usuario = SellerService.ativar_usuario(celular)
+                return jsonify({"mensagem": "Verificação concluída. Usuário ativo com sucesso", "status": ativar_usuario}), 200
             else:
                 return jsonify({"mensagem": "Código inválido ou expirado"}), 401
         except:
-            return jsonify({"mensagem": "Nenhum código foi solicitado ou você ja verificou"}), 400
+            return jsonify({"mensagem": "Nenhum código foi solicitado ou você ja verificou o número"}), 400
+    elif verificar_num is False:
+        return jsonify({"erro": "O usuário já se encontra ativado"}), 400
     else:
         return jsonify({"erro": "O número informado não existe no banco de dados"}), 400
