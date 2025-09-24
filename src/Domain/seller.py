@@ -1,9 +1,16 @@
-class SellerDomain:
-    def __init__(self, nome, cnpj, email, celular, senha, status):
-        self.nome = nome
-        self.cnpj = cnpj
-        self.email = email
-        self.celular = celular
-        self.senha = senha
-        self.status = status
+from dataclasses import dataclass
+import bcrypt
+
+@dataclass
+class SellerDomain:     
+    nome:str
+    cnpj:str
+    email:str
+    celular:str
+    senha:str
+    status: bool = False
+        
+    def hash_password(self):
+        self.senha = bcrypt.hashpw(self.senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
  

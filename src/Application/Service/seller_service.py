@@ -11,21 +11,25 @@ class MercadoException(Exception):
 class SellerService:
     
     @staticmethod
-    def authenticate(username, password):
-        seller = Mercado.query.filter_by(email=username).first()
-        senha = seller.senha
-        if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
-            return seller
-        return None
-    
-    @staticmethod
-    def create_seller(nome,cnpj,email,celular,senha,status ):
-        seller_existente = Mercado.query.filter_by(email=email).first()
-        if seller_existente:
+    def create_seller(seller_data: SellerDomain):
+        email_existente = Mercado.query.filter_by(email=seller_data.email).first()
+        celular_existente = Mercado.query.filter_by(celular=seller_data.celular).first()
+        if email_existente:
             raise MercadoException("Email já cadastrado")
-        senha = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        new_seller = SellerDomain(nome,cnpj,email,celular,senha,status)
-        seller = Mercado(nome=new_seller.nome,cnpj=new_seller.cnpj,email=new_seller.email,celular=new_seller.celular,senha=new_seller.senha,status=new_seller.status)
+        if celular_existente:
+            raise MercadoException("Celular já cadastrado")
+
+        
+        seller_data.hash_password()
+        seller = Mercado(
+            nome=seller_data.nome,
+            cnpj=seller_data.cnpj,
+            email=seller_data.email,
+            celular=seller_data.celular,
+            senha=seller_data.senha,
+            status=seller_data.status
+            )
+        
         db.session.add(seller)
         db.session.commit()
         return seller
@@ -67,12 +71,12 @@ class SellerService:
             return None
         else:
             if data.status is False:
-                return {"message": "O mercado já se encontra inativado"}
+                return {"mensagem": "O mercado já se encontra inativado"}
             else:
                 data.status = False
                 
             db.session.commit()
-            return {"message": "Mercado inativado com sucesso"}
+            return {"mensagem": "Mercado inativado com sucesso"}
     
     @staticmethod
     def atualizar_mercado(mercado_id, mercado_data):
@@ -139,3 +143,27 @@ class SellerService:
             'celular': data.celular,
             'status': data.status
         }
+
+    @staticmethod
+    def authenticate(username, password):
+        seller = Mercado.query.filter_by(email=username).first()
+        senha = seller.senha
+        if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
+            return seller
+    
+    @staticmethod
+    def verificar_numero(numero):
+        procurar_celular = Mercado.query.filter_by(celular=numero).first()
+        if not procurar_celular:
+            return None
+        if procurar_celular.status is False:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def ativar_usuario(numero):
+        data = Mercado.query.filter_by(celular=numero).first()
+        data.status = True
+        db.session.commit()
+        return data.status
