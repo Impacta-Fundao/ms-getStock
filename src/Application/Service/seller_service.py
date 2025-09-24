@@ -12,9 +12,13 @@ class SellerService:
     
     @staticmethod
     def create_seller(seller_data: SellerDomain):
-        seller_existente = Mercado.query.filter_by(email=seller_data.email).first()
-        if seller_existente:
+        email_existente = Mercado.query.filter_by(email=seller_data.email).first()
+        celular_existente = Mercado.query.filter_by(celular=seller_data.celular).first()
+        if email_existente:
             raise MercadoException("Email já cadastrado")
+        if celular_existente:
+            raise MercadoException("Celular já cadastrado")
+
         
         seller_data.hash_password()
         seller = Mercado(

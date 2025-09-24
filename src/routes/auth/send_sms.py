@@ -12,9 +12,9 @@ service_sid = os.environ["VERIFY_SERVICE_SID"]
 
 client = Client(account_sid, auth_token)
 
-send_whatsapp_bp = Blueprint('send_whatsapp', __name__)
+send_sms_bp = Blueprint('send_sms', __name__)
 
-@send_whatsapp_bp.route('/enviar_codigo', methods=['POST'])
+@send_sms_bp.route('/enviar_codigo', methods=['POST'])
 def enviar_codigo():
     celular = request.json.get("celular", None)
 
@@ -36,7 +36,7 @@ def enviar_codigo():
         return jsonify({"erro": "O número informado não existe no banco de dados"}), 400
 
 
-@send_whatsapp_bp.route('/verificar_codigo', methods=['POST'])
+@send_sms_bp.route('/verificar_codigo', methods=['POST'])
 def verificar_codigo():
     celular = request.json.get("celular", None)
     codigo = request.json.get("codigo", None)
