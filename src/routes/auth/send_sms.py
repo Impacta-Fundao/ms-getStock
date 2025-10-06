@@ -28,8 +28,8 @@ def enviar_codigo():
                     channel="sms"
             )
             return jsonify({"mensagem": "Código enviado com sucesso.", "status": verification.status}), 200
-        except:
-            return jsonify({"erro": "Erro desconhecido, tente novamente"}), 400
+        except Exception as e:
+            return jsonify({"erro": e.args}), 400
     elif verificar_num is False:
         return jsonify({"erro": "O usuário já se encontra ativado"}), 400
     else:
