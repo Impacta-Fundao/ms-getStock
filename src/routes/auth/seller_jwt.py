@@ -4,23 +4,25 @@ from src.Application.Service.seller_service import SellerService
 
 seller_jwt_bp = Blueprint('seller_jwt', __name__)
 
-@seller_jwt_bp.route('/login', methods=['POST'])
+@seller_jwt_bp.route('/auth/login', methods=['POST'])
 def login():    
     try:
-        username = request.json.get("email", None)
-        password = request.json.get("senha", None)
+        email_cadastrado = request.json.get("email", None)
+        senha = request.json.get("senha", None)
 
-        seller = SellerService.authenticate(username,password)
+        seller = SellerService.authenticate(email_cadastrado, senha)
         
-        if seller:
+        if seller is False:
+            return make_response(jsonify({"message": "Login não autorizado - Mercado inativado"}), 401)
+        elif seller:
             access_token = create_access_token(identity=str(seller.id))
             return jsonify({
-                "access_token":access_token,
-                "message":"Login realizado com sucesso",
+                "access_token": access_token,
+                "message": "Login realizado com sucesso",
                 "seller_id": seller.id,
                 "nome": seller.nome
-                }),200
+                }), 200
         else:
-            return make_response(jsonify({"message": "Usuário não autorizado - Email ou senha incorretos"}), 401)
+            return make_response(jsonify({"message": "Login não autorizado - Email ou senha incorretos"}), 401)
     except Exception:
-        return jsonify({"message": "Falha ao fazer autenticação: verifique seu email ou sua senha"}),400
+        return jsonify({"message": "Falha ao fazer autenticação - Verifique seu email ou senha"}), 400

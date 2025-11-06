@@ -30,6 +30,7 @@ def delete_seller(id):
     return SellerController.delete_seller(id)
 
 @mercado_bp.route('/mercados/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_seller(id):
     return SellerController.put_seller(id)
 
