@@ -18,10 +18,10 @@ def create_app(config_class=Config_db):
     CORS(app)
 
     from src.routes.auth.seller_jwt import seller_jwt_bp
-    from src.routes.auth.send_sms import send_sms_bp
+    from src.routes.auth.check_sms import sms_bp
     from src.routes.sellers.route import init_route
     app.register_blueprint(seller_jwt_bp)
-    app.register_blueprint(send_sms_bp)
+    app.register_blueprint(sms_bp)
     
     init_route(app)
     
