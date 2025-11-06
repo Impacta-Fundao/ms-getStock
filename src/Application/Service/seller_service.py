@@ -145,25 +145,29 @@ class SellerService:
         }
 
     @staticmethod
-    def authenticate(username, password):
-        seller = Mercado.query.filter_by(email=username).first()
-        senha = seller.senha
-        if seller and bcrypt.checkpw(password.encode('utf-8'), senha.encode('utf-8')):
-            return seller
-    
-    @staticmethod
-    def verificar_numero(numero):
-        procurar_celular = Mercado.query.filter_by(celular=numero).first()
-        if not procurar_celular:
+    def authenticate(email_cadastrado, passw):
+        seller = Mercado.query.filter_by(email=email_cadastrado).first()
+        if not seller:
             return None
-        if procurar_celular.status is False:
-            return True
-        else:
+        if not seller.status:
             return False
+        senha = seller.senha
+        if bcrypt.checkpw(passw.encode('utf-8'), senha.encode('utf-8')):
+            return seller
+        return None
 
     @staticmethod
-    def ativar_usuario(numero):
-        data = Mercado.query.filter_by(celular=numero).first()
-        data.status = True
+    def verificar_status_mercado(numero):
+        mercado = Mercado.query.filter_by(celular=numero).first()
+        if not mercado:
+            return None
+        if not mercado.status:
+            return False
+        return True
+
+    @staticmethod
+    def ativar_mercado(numero):
+        mercado = Mercado.query.filter_by(celular=numero).first()
+        mercado.status = True
         db.session.commit()
-        return data.status
+        return mercado.status
