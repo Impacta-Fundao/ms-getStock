@@ -11,10 +11,10 @@ class ProductController:
             requiredField = []
             
             domain = ProductDomain(
-                nome = data['nome'] if data.get('nome') else None,
+                nome = data.get('nome') if data.get('nome') else None,
                 preco = data.get('preco') if data.get('preco') else None,
                 quantidade = data.get('quantidade') if data.get('quantidade') else None,
-                imagem = data.get('imagem') if data.get('imagem') else None
+                imagem = data.get('imagem') if data.get('imagem') else None,
                 )
             
             requiredField.append({"nome": domain.nome, "preco": domain.preco, "quantidade": domain.quantidade, "imagem": domain.imagem})
@@ -76,7 +76,7 @@ class ProductController:
             if not resp:
                 return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
 
-            update_product = ProductService.atualizar_patch_produto(produto_id, resp)
+            update_product = ProductService.atualizar_produto(produto_id, resp)
 
             return make_response(jsonify({"data": update_product, "message": "Produto atualizado com sucesso"}), 200)
 
@@ -99,6 +99,17 @@ class ProductController:
 
         except ProductException as e:
             return make_response(jsonify({"message": f"{str(e)}"}), 400)
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
+
+    @staticmethod
+    def activate_product(produto_id):
+        try:
+            data = ProductService.ativar_produto(produto_id)
+            if data:
+                return make_response(jsonify({"data": "Produto ativado com sucesso"}), 200)
+        except ProductException as e:
+            return make_response(jsonify({"message": f"Erro ao ativar produto: {str(e)}"}), 400)
         except Exception as e:
             return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
 

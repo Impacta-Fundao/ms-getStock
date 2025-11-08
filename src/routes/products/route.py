@@ -34,6 +34,11 @@ def update_seller(id):
 def update_patch_seller(id):
     return ProductController.patch_product(id)
 
+@products_bp.route('/products/<int:id>/activate', methods=['PATCH'])
+@jwt_required()
+def activate_product(id):
+    return ProductController.activate_product(id)
+
 @products_bp.route('/products/<int:id>/inactivate', methods=['PATCH'])
 @jwt_required()
 def inactivate_product(id):

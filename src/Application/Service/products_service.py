@@ -1,3 +1,4 @@
+from flask_jwt_extended import get_jwt_identity
 from src.Domain.product import ProductDomain
 from src.Infrastructure.models.product import Produto
 from src import db
@@ -11,135 +12,154 @@ class ProductService:
     
     @staticmethod
     def cadastrar_produto(product_data: ProductDomain):
-        produto_existente = Produto.query.filter_by(nome=product_data.nome).first()
+        mercado_id = get_jwt_identity()
+        produto_existente = Produto.query.filter_by(nome=product_data.nome, seller_id=mercado_id).first()
 
-        if produto_existente: raise ProductException("Nome de produto já cadastrado")
-        
-        product = Produto(
+        if produto_existente: raise ProductException("Já existe um produto com esse nome neste mercado")
+                                                                                                                                                                                                                         
+        new_product = Produto(
             nome=product_data.nome,
             preco=product_data.preco,
             quantidade=product_data.quantidade,
             status=product_data.status,
-            imagem=product_data.imagem
+            imagem=product_data.imagem,
+            seller_id=mercado_id
         )
 
-        db.session.add(product)
+        db.session.add(new_product)
         db.session.commit()
 
-        return product
+        return new_product
     
     @staticmethod
     def listar_produtos():
-        data = Produto.query.all()
-        if not data: raise ProductException("Não foram encontrados produtos cadastrados")
+        mercado_id = get_jwt_identity()
+        produtos = Produto.query.filter_by(seller_id=mercado_id).all()
         
-        produtos_json = [{
+        if not produtos: raise ProductException("Não foram encontrados produtos cadastrados para este mercado")
+        
+        return [{
             "id": produto.id,
             "nome": produto.nome,
             "preco": produto.preco,
             "quantidade": produto.quantidade,
-            "status": produto.status,
-            "imagem": produto.imagem
-        } for produto in data]
-
-        return produtos_json
+            "imagem": produto.imagem,
+            "status": produto.status
+        } for produto in produtos]
     
     @staticmethod
     def get_id(produto_id):
-        data = Produto.query.get(produto_id)
-        if not data: raise ProductException("Produto não encontrado")
-        
-        produtos_json = {
-            "id": data.id,
-            "nome": data.nome,
-            "preco": data.preco,
-            "quantidade": data.quantidade,
-            "status": data.status,
-            "imagem": data.imagem
+        mercado_id = get_jwt_identity()
+        produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
+
+        if not produto: raise ProductException("Produto não encontrado ou não pertence a este mercado")
+
+        return {
+            "id": produto.id,
+            "nome": produto.nome,
+            "preco": produto.preco,
+            "quantidade": produto.quantidade,
+            "imagem": produto.imagem,
+            "status": produto.status
         }
 
-        return produtos_json
-    
     @staticmethod
     def deletar_produto(produto_id):
-        data = Produto.query.get(produto_id)
-        if not data: raise ProductException("Produto não encontrado")
-        if data.status: raise ProductException("Só é possível remover produtos inativados")
+        mercado_id = get_jwt_identity()
+        produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
+        
+        if not produto: raise ProductException("Produto não encontrado")
+        if produto.status: raise ProductException("Só é possível remover produtos inativados")
 
-        db.session.delete(data)
+        db.session.delete(produto)
         db.session.commit()
 
         return True
     
     @staticmethod
     def atualizar_produto(produto_id, produto_data):
-        data = Produto.query.get(produto_id)
-        if not data: raise ProductException("Produto não encontrado")
+        mercado_id = get_jwt_identity()
+        produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
+
+        if not produto: raise ProductException("Produto não encontrado")
         
         required_fields = {
-            "nome": produto_data.nome,
-            "preco": produto_data.preco,
-            "quantidade": produto_data.quantidade,
-            "imagem": produto_data.imagem
+            "nome": produto_data.get("nome"),
+            "preco": produto_data.get("preco"),
+            "quantidade": produto_data.get("quantidade"),
+            "imagem": produto_data.get("imagem")
         }
 
         for field, value in required_fields.items():
             if not value:
                 raise ProductException(f"Passe um valor para o campo {field}")
             
-        data.nome = required_fields["nome"]
-        data.preco = required_fields["preco"]
-        data.quantidade = required_fields["quantidade"]
-        if "status" in produto_data:
-            data.status = required_fields["status"]
-        data.imagem = required_fields["imagem"]
+        produto.nome = required_fields["nome"]
+        produto.preco = required_fields["preco"]
+        produto.quantidade = required_fields["quantidade"]
+        produto.imagem = required_fields["imagem"]
 
         db.session.commit()
 
         return {
-            "id": data.id,
-            "nome": data.nome,
-            "preco": data.preco,
-            "quantidade": data.quantidade,
-            "status": data.status,
-            "imagem": data.imagem
+            "id": produto.id,
+            "nome": produto.nome,
+            "preco": produto.preco,
+            "quantidade": produto.quantidade,
+            "imagem": produto.imagem,
+            "status": produto.status
         }
     
     @staticmethod
     def atualizar_patch_produto(produto_id, produto_data):
-        data = Produto.query.get(produto_id)
+        mercado_id = get_jwt_identity()
+        produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
 
-        if not data:
+        if not produto:
             raise ProductException("Produto não encontrado")
         if produto_data.get("nome"):
-            data.nome = produto_data["nome"]
+            produto.nome = produto_data["nome"]
         if produto_data.get("preco"):
-            data.nome = produto_data["preco"]
+            produto.preco = produto_data["preco"]
         if produto_data.get("quantidade"):
-            data.nome = produto_data["quantidade"]
-        if produto_data.get("status"):
-            data.nome = produto_data["status"]
+            produto.quantidade = produto_data["quantidade"]
         if produto_data.get("imagem"):
-            data.nome = produto_data["imagem"]
+            produto.imagem = produto_data["imagem"]
 
         db.session.commit()
         
         return {
-            "id": data.id,
-            "nome": data.nome,
-            "preco": data.preco,
-            "quantidade": data.quantidade,
-            "status": data.status,
-            "imagem": data.imagem
+            "id": produto.id,
+            "nome": produto.nome,
+            "preco": produto.preco,
+            "quantidade": produto.quantidade,
+            "imagem": produto.imagem,
+            "status": produto.status
         }
 
     @staticmethod
-    def inativar_produto(produto_id):
-        data = Produto.query.get(produto_id)
-        if not data: raise ProductException("Produto não encontrado") 
-        if not data.status: raise ProductException("O produto já se encontra inativado")
+    def ativar_produto(produto_id):
+        mercado_id = get_jwt_identity()
+        produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
 
-        data.status = False
+        if not produto: raise ProductException("Produto não encontrado")
+        if produto.status: raise ProductException("O produto já se encontra ativado")
+
+        produto.status = True
+
+        db.session.commit()
+
+        return True
+
+    @staticmethod
+    def inativar_produto(produto_id):
+        mercado_id = get_jwt_identity()
+        produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
+
+        if not produto: raise ProductException("Produto não encontrado") 
+        if not produto.status: raise ProductException("O produto já se encontra inativado")
+
+        produto.status = False
 
         db.session.commit()
 

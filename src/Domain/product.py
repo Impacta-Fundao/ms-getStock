@@ -5,5 +5,5 @@ class ProductDomain:
     nome: str
     preco: float
     quantidade: int
-    status: bool
     imagem: str
+    status: bool = True

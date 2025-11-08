@@ -21,6 +21,7 @@ class SellerService:
 
         
         seller_data.hash_password()
+        
         seller = Mercado(
             nome=seller_data.nome,
             cnpj=seller_data.cnpj,

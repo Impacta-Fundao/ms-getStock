@@ -9,13 +9,13 @@ class Produto(db.Model):
     nome = (Column(String(255), nullable=False))
     preco = (Column(Float, nullable=False))
     quantidade = (Column(Integer, nullable=False))
-    status = (Column(Boolean, nullable=False))
     imagem = (Column(String(255), nullable=False))
+    status = (Column(Boolean, nullable=False))
 
     seller_id = (Column(Integer, ForeignKey("mercados.id", ondelete="CASCADE"), nullable=False))
     mercado = relationship("Mercado", back_populates="produtos")
 
-    vendas = relationship("Venda", back_populates="produto")
+    vendas = relationship("Venda", back_populates="produtos")
 
     def to_dict(self):
         return {
@@ -23,7 +23,6 @@ class Produto(db.Model):
             "nome": self.nome,
             "preco": self.preco,
             "quantidade": self.quantidade,
-            "status": self.status,
             "imagem": self.imagem,
-            "seller_id": self.seller_id
+            "status": self.status
         }

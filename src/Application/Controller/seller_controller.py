@@ -93,7 +93,7 @@ class SellerController:
             if not resp:
                 return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
             
-            update_seller = SellerService.atualizar_patch_mercado(mercado_id,resp)
+            update_seller = SellerService.atualizar_mercado(mercado_id,resp)
             
             return make_response(jsonify({"data": update_seller, "message": "Mercado atualizado com sucesso"}), 200)
             

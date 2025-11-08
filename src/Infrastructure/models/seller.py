@@ -14,6 +14,7 @@ class Mercado(db.Model):
     status = (Column(Boolean, nullable=False))
 
     produtos = relationship("Produto", back_populates="mercado", cascade="all, delete-orphan", passive_deletes=True)
+    vendas = relationship("Venda", back_populates="mercado", cascade="all, delete-orphan", passive_deletes=True)
     
     def to_dict(self):
         return {
