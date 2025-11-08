@@ -19,9 +19,13 @@ def create_app(config_class=Config_db):
 
     from src.routes.auth.seller_jwt import seller_jwt_bp
     from src.routes.auth.check_sms import sms_bp
+    from src.routes.products.route import products_bp
+    from src.routes.sales.route import sales_bp
     from src.routes.sellers.route import init_route
     app.register_blueprint(seller_jwt_bp)
     app.register_blueprint(sms_bp)
+    app.register_blueprint(products_bp)
+    app.register_blueprint(sales_bp)
     
     init_route(app)
     

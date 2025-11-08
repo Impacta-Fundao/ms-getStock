@@ -1,5 +1,6 @@
 from src import db
-from sqlalchemy import Integer, Column, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 
 class Mercado(db.Model):
     __tablename__ = "mercados"
@@ -11,6 +12,9 @@ class Mercado(db.Model):
     celular = (Column(String(11), nullable=False))
     senha = (Column(String(100), nullable=False))
     status = (Column(Boolean, nullable=False))
+
+    produtos = relationship("Produto", back_populates="mercado", cascade="all, delete-orphan", passive_deletes=True)
+    vendas = relationship("Venda", back_populates="mercado", cascade="all, delete-orphan", passive_deletes=True)
     
     def to_dict(self):
         return {

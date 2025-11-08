@@ -28,7 +28,7 @@ class SellerController:
                 senha = data.get('senha') if data.get('senha') else None,
                 )
             
-            requiredField.append({"nome": domain.nome, "cnpj":domain.cnpj, "email": domain.email, "celular":domain.celular, "senha":domain.senha})
+            requiredField.append({"nome": domain.nome, "cnpj": domain.cnpj, "email": domain.email, "celular": domain.celular, "senha": domain.senha})
             for field in requiredField:
                 for k, v in field.items():
                     if v is None:
@@ -44,42 +44,46 @@ class SellerController:
                 "verification": "Código para ativação enviado por SMS"
                     }), 200)
         except MercadoException as e:
-            return make_response(jsonify({"message": f"Erro na requisição: {e.msg}"}),500)
-        
+            return make_response(jsonify({"message": f"Erro na requisição: {str(e)}"}), 400)
         except Exception as e:
-            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}),500)
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
         
     @staticmethod
     def get_sellers():
         try:
             data = SellerService.listar_mercados()
             return make_response(jsonify({"data": data}), 200)
-            
         
         except MercadoException as e:
-            return make_response(jsonify({"message": f"Erro ao listar mercados: {str(e.msg)}"}), 500)
+            return make_response(jsonify({"message": f"Erro ao listar mercados: {str(e)}"}), 400)
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
         
     @staticmethod
     def get_seller_id(mercado_id):
         try:
             data = SellerService.get_id(mercado_id)
             if not data:
-                return make_response(jsonify({"message": "Não existe esse mercado cadastrado"}),400 )
+                return make_response(jsonify({"message": "Não existe esse mercado cadastrado"}), 400)
             return make_response(jsonify({"data": data}), 200)
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"Erro ao buscar mercado: {str(e.msg)}"}), 500)
+            return make_response(jsonify({"message": f"Erro ao buscar mercado: {str(e)}"}), 400)
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
     
     @staticmethod
     def delete_seller(mercado_id):
         try:
             data = SellerService.deletar_mercado(mercado_id)
             if not data:
-                return make_response(jsonify({"message": "Não existe esse mercado cadastrado"}),400 )
+                return make_response(jsonify({"message": "Não existe esse mercado cadastrado"}), 400)
             return make_response(jsonify({"data": data}), 200)
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"Erro ao deletar mercado: {str(e.msg)}"}), 500)
+            return make_response(jsonify({"message": f"Erro ao deletar mercado: {str(e)}"}), 400)
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
         
     @staticmethod
     def put_seller(mercado_id):
@@ -89,13 +93,14 @@ class SellerController:
             if not resp:
                 return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
             
-            updateSeller = SellerService.atualizar_mercado(mercado_id,resp)
+            update_seller = SellerService.atualizar_mercado(mercado_id,resp)
             
-            return make_response(jsonify({"data": updateSeller, "message": "Atualizado com sucesso"}), 200)
+            return make_response(jsonify({"data": update_seller, "message": "Mercado atualizado com sucesso"}), 200)
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"{e.msg}"}),400 )
-    
+            return make_response(jsonify({"message": f"{str(e)}"}), 400)
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
     
     @staticmethod
     def patch_seller(mercado_id):
@@ -105,9 +110,11 @@ class SellerController:
             if not resp:
                 return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
             
-            updateSeller = SellerService.atualizar_patch_mercado(mercado_id,resp)
+            update_seller = SellerService.atualizar_patch_mercado(mercado_id, resp)
             
-            return make_response(jsonify({"data": updateSeller, "message": "Atualizado com sucesso"}))
+            return make_response(jsonify({"data": update_seller, "message": "Mercado atualizado com sucesso"}), 200)
             
         except MercadoException as e:
-            return make_response(jsonify({"message": f"{e.msg}"}),400 )
+            return make_response(jsonify({"message": f"{str(e)}"}), 400)
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
