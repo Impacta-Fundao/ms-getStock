@@ -19,8 +19,7 @@ def login():
             return jsonify({
                 "access_token": access_token,
                 "message": "Login realizado com sucesso",
-                "seller_id": seller.id,
-                "nome": seller.nome
+                "seller_id": seller.id
                 }), 200
         else:
             return make_response(jsonify({"message": "Login não autorizado - Email ou senha incorretos"}), 401)
