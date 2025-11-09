@@ -9,27 +9,45 @@ class ProductException(Exception):
         self.msg = msg
 
 class ProductService:
-    
     @staticmethod
-    def cadastrar_produto(product_data: ProductDomain):
+    def cadastrar_produto(produto_data):
         mercado_id = get_jwt_identity()
-        produto_existente = Produto.query.filter_by(nome=product_data.nome, seller_id=mercado_id).first()
+
+        if not produto_data: raise ProductException("Nenhum dado fornecido")
+
+        domain = ProductDomain(
+            nome = produto_data.get('nome') if produto_data.get('nome') else False,
+            preco = produto_data.get('preco') if produto_data.get('preco') and produto_data.get('preco') > 0 else False,
+            quantidade = produto_data.get('quantidade') if produto_data.get('quantidade') and produto_data.get('quantidade') > 0 else False,
+            imagem = produto_data.get('imagem') if produto_data.get('imagem') else False,
+            )
+        
+        data_itens = {"nome": domain.nome, 
+                      "preco": domain.preco, 
+                      "quantidade": domain.quantidade, 
+                      "imagem": domain.imagem
+                      }
+
+        for k, v in data_itens.items():
+            if not v: raise ProductException(f"Passe um valor para o campo {k}")
+            
+        produto_existente = Produto.query.filter_by(nome=domain.nome, seller_id=mercado_id).first()
 
         if produto_existente: raise ProductException("Já existe um produto com esse nome neste mercado")
                                                                                                                                                                                                                          
         new_product = Produto(
-            nome=product_data.nome,
-            preco=product_data.preco,
-            quantidade=product_data.quantidade,
-            status=product_data.status,
-            imagem=product_data.imagem,
+            nome=domain.nome,
+            preco=domain.preco,
+            quantidade=domain.quantidade,
+            status=domain.status,
+            imagem=domain.imagem,
             seller_id=mercado_id
         )
 
         db.session.add(new_product)
         db.session.commit()
 
-        return new_product
+        return new_product.to_dict()
     
     @staticmethod
     def listar_produtos():
@@ -73,31 +91,32 @@ class ProductService:
 
         db.session.delete(produto)
         db.session.commit()
-
-        return True
     
     @staticmethod
     def atualizar_produto(produto_id, produto_data):
         mercado_id = get_jwt_identity()
         produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
 
+        if not produto_data: raise ProductException("Nenhum dado fornecido")
         if not produto: raise ProductException("Produto não encontrado")
         
-        required_fields = {
+        data_itens = {
             "nome": produto_data.get("nome"),
             "preco": produto_data.get("preco"),
             "quantidade": produto_data.get("quantidade"),
             "imagem": produto_data.get("imagem")
         }
 
-        for field, value in required_fields.items():
-            if not value:
-                raise ProductException(f"Passe um valor para o campo {field}")
+        for k, v in data_itens.items():
+            if not v:
+                raise ProductException(f"Passe um valor para o campo {k}")
             
-        produto.nome = required_fields["nome"]
-        produto.preco = required_fields["preco"]
-        produto.quantidade = required_fields["quantidade"]
-        produto.imagem = required_fields["imagem"]
+        produto.nome = data_itens["nome"]
+        if data_itens["preco"] <= 0: raise ProductException("Passe um valor positivo para o campo preco")
+        produto.preco = data_itens["preco"]
+        if data_itens["quantidade"] <= 0: raise ProductException("Passe um valor positivo para o campo quantidade")
+        produto.quantidade = data_itens["quantidade"]
+        produto.imagem = data_itens["imagem"]
 
         db.session.commit()
 
@@ -114,17 +133,17 @@ class ProductService:
     def atualizar_patch_produto(produto_id, produto_data):
         mercado_id = get_jwt_identity()
         produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
-
-        if not produto:
-            raise ProductException("Produto não encontrado")
-        if produto_data.get("nome"):
-            produto.nome = produto_data["nome"]
-        if produto_data.get("preco"):
-            produto.preco = produto_data["preco"]
+        
+        if not produto_data: raise ProductException("Nenhum dado fornecido")
+        if not produto: raise ProductException("Produto não encontrado")
+        if produto_data.get("nome"): produto.nome = produto_data["nome"]
+        if produto_data.get("preco"): 
+            if produto_data["preco"] > 0: produto.preco = produto_data["preco"]
+            else: raise ProductException("Passe um valor positivo para o campo preco")
         if produto_data.get("quantidade"):
-            produto.quantidade = produto_data["quantidade"]
-        if produto_data.get("imagem"):
-            produto.imagem = produto_data["imagem"]
+            if produto_data["quantidade"] > 0: produto.quantidade = produto_data["quantidade"]
+            else: raise ProductException("Passe um valor positivo para o campo quantidade")
+        if produto_data.get("imagem"): produto.imagem = produto_data["imagem"]
 
         db.session.commit()
         
@@ -149,8 +168,6 @@ class ProductService:
 
         db.session.commit()
 
-        return True
-
     @staticmethod
     def inativar_produto(produto_id):
         mercado_id = get_jwt_identity()
@@ -162,5 +179,3 @@ class ProductService:
         produto.status = False
 
         db.session.commit()
-
-        return True
