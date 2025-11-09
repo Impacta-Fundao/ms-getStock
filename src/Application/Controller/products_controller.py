@@ -1,36 +1,15 @@
 from flask import request, jsonify, make_response
 from src.Application.Service.products_service import ProductService, ProductException
-from src.Domain.product import ProductDomain
 
 class ProductController:
-    
     @staticmethod
     def post_product():
         try:
             data = request.get_json()
-            requiredField = []
-            
-            domain = ProductDomain(
-                nome = data.get('nome') if data.get('nome') else None,
-                preco = data.get('preco') if data.get('preco') else None,
-                quantidade = data.get('quantidade') if data.get('quantidade') else None,
-                imagem = data.get('imagem') if data.get('imagem') else None,
-                )
-            
-            requiredField.append({"nome": domain.nome, "preco": domain.preco, "quantidade": domain.quantidade, "imagem": domain.imagem})
-            for field in requiredField:
-                for k, v in field.items():
-                    if v is None:
-                        return make_response(jsonify({"message": f"Passe um valor para o campo {k}"}), 400)
-
-            produto = ProductService.cadastrar_produto(domain)
-            
-            return make_response(jsonify({ 
-                "data": produto.to_dict(),
-                "message": "Produto cadastrado com sucesso"
-                }), 200)
+            produto = ProductService.cadastrar_produto(data)
+            return make_response(jsonify({"data": produto, "message": "Produto cadastrado com sucesso"}), 200)
         except ProductException as e:
-            return make_response(jsonify({"message": f"Erro na requisição: {str(e)}"}), 400)
+            return make_response(jsonify({"message": f"Erro ao cadastrar produto: {str(e)}"}), 400)
         except Exception as e:
             return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
 
@@ -39,7 +18,6 @@ class ProductController:
         try:
             data = ProductService.listar_produtos()
             return make_response(jsonify({"data": data}), 200)
-        
         except ProductException as e:
             return make_response(jsonify({"message": f"Erro ao listar produtos: {str(e)}"}), 400)
         except Exception as e:
@@ -49,9 +27,7 @@ class ProductController:
     def get_product_id(produto_id):
         try:
             data = ProductService.get_id(produto_id)
-            if data:
-                return make_response(jsonify({"data": data}), 200)
-            
+            return make_response(jsonify({"data": data}), 200)
         except ProductException as e:
             return make_response(jsonify({"message": f"Erro ao buscar produto: {str(e)}"}), 400)
         except Exception as e:
@@ -60,9 +36,8 @@ class ProductController:
     @staticmethod
     def delete_product(produto_id):
         try:
-            data = ProductService.deletar_produto(produto_id)
-            if data:
-                return make_response(jsonify({"data": "Produto removido com sucesso"}), 200)
+            ProductService.deletar_produto(produto_id)
+            return make_response(jsonify({"data": "Produto removido com sucesso"}), 200)
         except ProductException as e:
             return make_response(jsonify({"message": f"Erro ao deletar produto: {str(e)}"}), 400)
         except Exception as e:
@@ -71,43 +46,30 @@ class ProductController:
     @staticmethod
     def put_product(produto_id):
         try:
-            resp = request.get_json()
-
-            if not resp:
-                return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
-
-            update_product = ProductService.atualizar_produto(produto_id, resp)
-
+            data = request.get_json()
+            update_product = ProductService.atualizar_produto(produto_id, data)
             return make_response(jsonify({"data": update_product, "message": "Produto atualizado com sucesso"}), 200)
-
         except ProductException as e:
-            return make_response(jsonify({"message": f"{str(e)}"}), 400)
+            return make_response(jsonify({"message": f"Erro ao atualizar produto: {str(e)}"}), 400)
         except Exception as e:
             return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
 
     @staticmethod
     def patch_product(produto_id):
         try:
-            resp = request.get_json()
-
-            if not resp:
-                return make_response(jsonify({"error": "Nenhum dado fornecido"}), 400)
-
-            update_product = ProductService.atualizar_patch_produto(produto_id, resp)
-
-            return make_response(jsonify({"data": update_product, "message": "Produto atualizado com sucesso"}), 200)
-
+            data = request.get_json()
+            update_patch_product = ProductService.atualizar_patch_produto(produto_id, data)
+            return make_response(jsonify({"data": update_patch_product, "message": "Produto atualizado com sucesso"}), 200)
         except ProductException as e:
-            return make_response(jsonify({"message": f"{str(e)}"}), 400)
+            return make_response(jsonify({"message": f"Erro ao atualizar produto: {str(e)}"}), 400)
         except Exception as e:
             return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
 
     @staticmethod
     def activate_product(produto_id):
         try:
-            data = ProductService.ativar_produto(produto_id)
-            if data:
-                return make_response(jsonify({"data": "Produto ativado com sucesso"}), 200)
+            ProductService.ativar_produto(produto_id)
+            return make_response(jsonify({"data": "Produto ativado com sucesso"}), 200)
         except ProductException as e:
             return make_response(jsonify({"message": f"Erro ao ativar produto: {str(e)}"}), 400)
         except Exception as e:
@@ -116,9 +78,8 @@ class ProductController:
     @staticmethod
     def inactivate_product(produto_id):
         try:
-            data = ProductService.inativar_produto(produto_id)
-            if data:
-                return make_response(jsonify({"data": "Produto inativado com sucesso"}), 200)
+            ProductService.inativar_produto(produto_id)
+            return make_response(jsonify({"data": "Produto inativado com sucesso"}), 200)
         except ProductException as e:
             return make_response(jsonify({"message": f"Erro ao inativar produto: {str(e)}"}), 400)
         except Exception as e:
