@@ -238,7 +238,7 @@ class SellerService:
                     }
         
         for k, v in data_itens.items():
-            if not v: raise SmsException(f"Passe um valor para o campo {k}")
+            if not v: raise AuthException(f"Passe um valor para o campo {k}")
 
         mercado = Mercado.query.filter_by(email=data_itens['email']).first()
 

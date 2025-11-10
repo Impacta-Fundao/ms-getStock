@@ -6,32 +6,32 @@ products_bp = Blueprint('product', __name__)
 
 @products_bp.route('/products', methods=['GET'])
 @jwt_required()
-def list_seller():
+def list_products():
     return ProductController.get_products()
 
 @products_bp.route('/products/<int:id>', methods=['GET'])
 @jwt_required()
-def get_id_seller(id):
+def get_id_product(id):
     return ProductController.get_product_id(id)
 
 @products_bp.route('/products', methods=['POST'])
 @jwt_required()
-def create_seller():
+def create_product():
     return ProductController.post_product()
 
 @products_bp.route('/products/<int:id>', methods=['DELETE'])
 @jwt_required()
-def delete_seller(id):
+def delete_product(id):
     return ProductController.delete_product(id)
 
 @products_bp.route('/products/<int:id>', methods=['PUT'])
 @jwt_required()
-def update_seller(id):
+def update_product(id):
     return ProductController.put_product(id)
 
 @products_bp.route('/products/<int:id>', methods=['PATCH'])
 @jwt_required()
-def update_patch_seller(id):
+def update_patch_product(id):
     return ProductController.patch_product(id)
 
 @products_bp.route('/products/<int:id>/activate', methods=['PATCH'])
