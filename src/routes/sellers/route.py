@@ -11,12 +11,10 @@ def init_route(app):
         return jsonify({"message": "API OK"}), 200
 
 @mercado_bp.route('/mercados', methods=['GET'])
-@jwt_required()
 def list_seller():
     return SellerController.get_sellers()
 
 @mercado_bp.route('/mercados/<int:id>', methods=['GET'])
-@jwt_required()
 def get_id_seller(id):
     return SellerController.get_seller_id(id)
 

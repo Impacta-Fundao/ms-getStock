@@ -23,6 +23,5 @@ class Mercado(db.Model):
             "cnpj": self.cnpj,
             "email": self.email,
             "celular": self.celular,
-            "senha": self.senha,
             "status": self.status
         }

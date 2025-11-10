@@ -1,27 +1,15 @@
-from flask import Blueprint, jsonify, request,make_response
-from flask_jwt_extended import create_access_token
-from src.Application.Service.seller_service import SellerService 
+from flask import Blueprint, request, jsonify, make_response
+from src.Application.Service.seller_service import SellerService, AuthException
 
 seller_jwt_bp = Blueprint('seller_jwt', __name__)
 
 @seller_jwt_bp.route('/auth/login', methods=['POST'])
 def login():    
     try:
-        email_cadastrado = request.json.get("email", None)
-        senha = request.json.get("senha", None)
-
-        seller = SellerService.authenticate(email_cadastrado, senha)
-        
-        if seller is False:
-            return make_response(jsonify({"message": "Login não autorizado - Mercado inativado"}), 401)
-        elif seller:
-            access_token = create_access_token(identity=str(seller.id))
-            return jsonify({
-                "access_token": access_token,
-                "message": "Login realizado com sucesso",
-                "seller_id": seller.id
-                }), 200
-        else:
-            return make_response(jsonify({"message": "Login não autorizado - Email ou senha incorretos"}), 401)
-    except Exception:
-        return jsonify({"message": "Falha ao fazer autenticação - Verifique seu email ou senha"}), 400
+        data = request.get_json()
+        token, id_mercado = SellerService.authenticate(data)
+        return make_response(jsonify({"access_token": token, "seller_id": id_mercado, "message": "Login realizado com sucesso"}), 200)
+    except AuthException as e:
+        return make_response(jsonify({"message": f"Falha ao fazer autenticação: {str(e)}"}), 400)
+    except Exception as e:
+        return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
