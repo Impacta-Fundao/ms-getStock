@@ -11,7 +11,7 @@ class Venda(db.Model):
     total_venda = (Column(Float, nullable=False))
     data_venda = (Column(DateTime, nullable=False))
 
-    produto_id = (Column(Integer, ForeignKey("produtos.id"), nullable=False))
+    produto_id = (Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False))
     produtos = relationship("Produto", back_populates="vendas")
 
     seller_id = (Column(Integer, ForeignKey("mercados.id", ondelete="CASCADE"), nullable=False))
