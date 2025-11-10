@@ -2,6 +2,7 @@ import os
 from src.Domain.seller import SellerDomain
 from src.Infrastructure.models.seller import Mercado
 from src import db
+from flask_jwt_extended import create_access_token, get_jwt_identity
 import bcrypt
 from twilio.rest import Client
 from dotenv import load_dotenv
@@ -20,6 +21,11 @@ class MercadoException(Exception):
         self.msg = msg
 
 class SmsException(Exception):
+    def __init__(self, msg):
+        super().__init__(msg)
+        self.msg = msg
+
+class AuthException(Exception):
     def __init__(self, msg):
         super().__init__(msg)
         self.msg = msg
@@ -103,8 +109,11 @@ class SellerService:
     
     @staticmethod
     def deletar_mercado(mercado_id):
+        mercado_id_jwt = get_jwt_identity()
         mercado = Mercado.query.get(mercado_id)
+
         if not mercado: raise MercadoException("Mercado não encontrado")
+        if str(mercado_id) != mercado_id_jwt: raise MercadoException("Você não está autorizado a inativar este mercado")
         if not mercado.status: raise MercadoException("O mercado já se encontra inativado")
 
         mercado.status = False
@@ -113,10 +122,12 @@ class SellerService:
     
     @staticmethod
     def atualizar_mercado(mercado_id, mercado_data):
+        mercado_id_jwt = get_jwt_identity()
         mercado = Mercado.query.get(mercado_id)
 
-        if not mercado_data: raise MercadoException("Nenhum dado fornecido")
         if not mercado: raise MercadoException("Mercado não encontrado")
+        if str(mercado_id) != mercado_id_jwt: raise MercadoException("Você não está autorizado a atualizar este mercado")
+        if not mercado_data: raise MercadoException("Nenhum dado fornecido")
         
         data_itens = {
             'nome': mercado_data.get('nome'),
@@ -130,7 +141,9 @@ class SellerService:
                 raise MercadoException(f"Passe um valor para o campo {k}")
         
         mercado.nome = data_itens['nome']
-        mercado.cnpj = data_itens['cnpj']
+        cnpj_existente = Mercado.query.filter_by(cnpj=data_itens['cnpj']).first()
+        if not cnpj_existente: mercado.cnpj = data_itens['cnpj']
+        else: raise MercadoException("CNPJ já cadastrado")
         email_existente = Mercado.query.filter_by(email=data_itens['email']).first()
         if not email_existente: mercado.email = data_itens['email']
         else: raise MercadoException("Email já cadastrado")
@@ -151,12 +164,18 @@ class SellerService:
         
     @staticmethod
     def atualizar_patch_mercado(mercado_id, mercado_data):
+        mercado_id_jwt = get_jwt_identity()
         mercado = Mercado.query.get(mercado_id)
 
-        if not mercado_data: raise MercadoException("Nenhum dado fornecido")
         if not mercado: raise MercadoException("Mercado não encontrado")
+        if str(mercado_id) != mercado_id_jwt: raise MercadoException("Você não está autorizado a atualizar este mercado")
+        if not mercado_data: raise MercadoException("Nenhum dado fornecido")
+        
         if mercado_data.get('nome'): mercado.nome = mercado_data['nome']
-        if mercado_data.get('cnpj'): mercado.cnpj = mercado_data['cnpj']
+        if mercado_data.get('cnpj'):
+            cnpj_existente = Mercado.query.filter_by(cnpj=mercado_data['cnpj']).first()
+            if not cnpj_existente: mercado.cnpj = mercado_data['cnpj']
+            else: raise MercadoException("CNPJ já cadastrado")
         if mercado_data.get('email'):
             email_existente = Mercado.query.filter_by(email=mercado_data['email']).first()
             if not email_existente: mercado.email = mercado_data['email']
@@ -210,11 +229,26 @@ class SellerService:
             raise SmsException("Código inválido, expirado ou não solicitado")
 
     @staticmethod
-    def authenticate(email_cadastrado, passw):
-        mercado = Mercado.query.filter_by(email=email_cadastrado).first()
+    def authenticate(data):
+        if not data: raise AuthException("Nenhum dado fornecido")
 
-        if not mercado: return None
-        if not mercado.status: return False
+        data_itens = {
+                    "email": data.get('email'), 
+                    "senha": data.get('senha')
+                    }
+        
+        for k, v in data_itens.items():
+            if not v: raise SmsException(f"Passe um valor para o campo {k}")
+
+        mercado = Mercado.query.filter_by(email=data_itens['email']).first()
+
+        if not mercado: raise AuthException("Email incorreto")
+        if not mercado.status: raise AuthException("O mercado está inativado")
+
         senha = mercado.senha
-        if bcrypt.checkpw(passw.encode('utf-8'), senha.encode('utf-8')): return mercado
-        return None
+        
+        if bcrypt.checkpw(data_itens['senha'].encode('utf-8'), senha.encode('utf-8')):
+            access_token = create_access_token(identity=str(mercado.id))
+            return access_token, mercado.id
+        else: 
+            raise AuthException("Senha incorreta")
