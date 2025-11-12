@@ -134,6 +134,7 @@ class SellerService:
             'cnpj': mercado_data.get('cnpj'),
             'email': mercado_data.get('email'),
             'celular': mercado_data.get('celular'),
+            'senha': mercado_data.get('senha')
         }
         
         for k, v in data_itens.items():
@@ -150,6 +151,9 @@ class SellerService:
         celular_existente = Mercado.query.filter_by(celular=data_itens['celular']).first()
         if not celular_existente: mercado.celular = data_itens['celular']
         else: raise MercadoException("Celular já cadastrado")
+
+        nova_senha = bcrypt.hashpw(str(data_itens['senha']).encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        mercado.senha = nova_senha
         
         db.session.commit()
         
@@ -184,6 +188,11 @@ class SellerService:
             celular_existente = Mercado.query.filter_by(celular=mercado_data['celular']).first()
             if not celular_existente: mercado.celular = mercado_data['celular']
             else: raise MercadoException("Celular já cadastrado")
+        if mercado_data.get('senha'):
+            nova_senha = bcrypt.hashpw(str(mercado_data['senha']).encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            mercado.senha = nova_senha
+            db.session.commit()
+            return "Senha alterada com sucesso"
 
         db.session.commit()
         
