@@ -1,5 +1,5 @@
 from src import db
-from sqlalchemy import Column, ForeignKey, Integer, Float, Date
+from sqlalchemy import Column, ForeignKey, Integer, Float, DateTime
 from sqlalchemy.orm import relationship
 
 class Venda(db.Model):
@@ -8,10 +8,10 @@ class Venda(db.Model):
     id = (Column(Integer, primary_key=True))
     quantidade = (Column(Integer, nullable=False))
     preco_venda = (Column(Float, nullable=False))
-    total_venda = (Column(Integer, nullable=False))
-    data_venda = (Column(Date, nullable=False))
+    total_venda = (Column(Float, nullable=False))
+    data_venda = (Column(DateTime, nullable=False))
 
-    produto_id = (Column(Integer, ForeignKey("produtos.id"), nullable=False))
+    produto_id = (Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False))
     produtos = relationship("Produto", back_populates="vendas")
 
     seller_id = (Column(Integer, ForeignKey("mercados.id", ondelete="CASCADE"), nullable=False))
@@ -20,7 +20,8 @@ class Venda(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "total_venda": self.quantidade,
             "preco_venda": self.preco_venda,
-            "produto_id": self.produto_id
+            "quantidade": self.quantidade,
+            "total_venda": self.total_venda,
+            "data_venda": self.data_venda.strftime("%Y-%m-%d %H:%M:%S") if self.data_venda else None
         }

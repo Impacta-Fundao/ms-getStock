@@ -66,7 +66,7 @@ class ProductService:
         } for produto in produtos]
     
     @staticmethod
-    def get_id(produto_id):
+    def listar_produto_id(produto_id):
         mercado_id = get_jwt_identity()
         produto = Produto.query.filter_by(id=produto_id, seller_id=mercado_id).first()
 
@@ -163,6 +163,7 @@ class ProductService:
 
         if not produto: raise ProductException("Produto não encontrado")
         if produto.status: raise ProductException("O produto já se encontra ativado")
+        if produto.quantidade == 0: raise ProductException("A quantidade do produto precisa ser superior a 0 para ativa-lo")
 
         produto.status = True
 

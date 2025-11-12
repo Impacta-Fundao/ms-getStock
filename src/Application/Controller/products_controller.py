@@ -26,7 +26,7 @@ class ProductController:
     @staticmethod
     def get_product_id(produto_id):
         try:
-            data = ProductService.get_id(produto_id)
+            data = ProductService.listar_produto_id(produto_id)
             return make_response(jsonify({"data": data}), 200)
         except ProductException as e:
             return make_response(jsonify({"message": f"Erro ao buscar produto: {str(e)}"}), 400)
