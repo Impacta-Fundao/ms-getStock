@@ -1,6 +1,7 @@
 import os
 from src.Domain.seller import SellerDomain
 from src.Infrastructure.models.seller import Mercado
+from src.utils.return_service import ReturnSeller
 from src import db
 from flask_jwt_extended import create_access_token, get_jwt_identity
 import bcrypt
@@ -53,11 +54,11 @@ class SellerService:
         for k, v in data_itens.items():
             if not v: raise MercadoException(f"Passe um valor para o campo {k}")
 
-        email_existente = Mercado.query.filter_by(email=domain.email).first()
-        celular_existente = Mercado.query.filter_by(celular=domain.celular).first()
+        email_mercado = Mercado.query.filter_by(email=domain.email).first()
+        celular_mercado = Mercado.query.filter_by(celular=domain.celular).first()
         
-        if email_existente: raise MercadoException("Email já cadastrado")
-        if celular_existente: raise MercadoException("Celular já cadastrado")
+        if email_mercado: raise MercadoException("Email já cadastrado")
+        if celular_mercado: raise MercadoException("Celular já cadastrado")
 
         domain.hash_password()
 
@@ -75,7 +76,9 @@ class SellerService:
         db.session.add(seller)
         db.session.commit()
 
-        return seller.to_dict()
+        mercado_cadastrado = Mercado.query.filter_by(email=domain.email).first()
+
+        return ReturnSeller.sellers(mercado_cadastrado)
     
     @staticmethod
     def listar_mercados():
@@ -83,14 +86,7 @@ class SellerService:
         
         if not mercados: raise MercadoException("Não foram encontrados mercados cadastrados")
 
-        return [{
-            'id': mercado.id,
-            'nome': mercado.nome,
-            'cnpj': mercado.cnpj,
-            'email': mercado.email,
-            'celular': mercado.celular,
-            'status': mercado.status
-        } for mercado in mercados]
+        return [ReturnSeller.sellers(mercado) for mercado in mercados]
     
     @staticmethod
     def get_id(mercado_id):
@@ -98,14 +94,7 @@ class SellerService:
 
         if not mercado: raise MercadoException("Mercado não encontrado")
         
-        return {
-            'id': mercado.id,
-            'nome': mercado.nome,
-            'cnpj': mercado.cnpj,
-            'email': mercado.email,
-            'celular': mercado.celular,
-            'status': mercado.status,
-        }
+        return ReturnSeller.sellers(mercado)
     
     @staticmethod
     def deletar_mercado(mercado_id):
@@ -140,6 +129,8 @@ class SellerService:
         for k, v in data_itens.items():
             if not v:
                 raise MercadoException(f"Passe um valor para o campo {k}")
+            if not isinstance(v, str):
+                raise MercadoException(f"Passe um valor no formato (String) para o campo {k}")
         
         mercado.nome = data_itens['nome']
         cnpj_existente = Mercado.query.filter_by(cnpj=data_itens['cnpj']).first()
@@ -157,14 +148,7 @@ class SellerService:
         
         db.session.commit()
         
-        return {
-            'id': mercado.id,
-            'nome': mercado.nome,
-            'cnpj': mercado.cnpj,
-            'email': mercado.email,
-            'celular': mercado.celular,
-            'status': mercado.status
-        }
+        return ReturnSeller.sellers(mercado)
         
     @staticmethod
     def atualizar_patch_mercado(mercado_id, mercado_data):
@@ -175,19 +159,26 @@ class SellerService:
         if str(mercado_id) != mercado_id_jwt: raise MercadoException("Você não está autorizado a atualizar este mercado")
         if not mercado_data: raise MercadoException("Nenhum dado fornecido")
         
-        if mercado_data.get('nome'): mercado.nome = mercado_data['nome']
+        if mercado_data.get('nome'): mercado.nome = str(mercado_data['nome'])
+        
         if mercado_data.get('cnpj'):
-            cnpj_existente = Mercado.query.filter_by(cnpj=mercado_data['cnpj']).first()
-            if not cnpj_existente: mercado.cnpj = mercado_data['cnpj']
+            novo_cnpj = str(mercado_data['cnpj'])
+            verificar_cnpj = Mercado.query.filter_by(cnpj=novo_cnpj).first()
+            if not verificar_cnpj: mercado.cnpj = novo_cnpj
             else: raise MercadoException("CNPJ já cadastrado")
+        
         if mercado_data.get('email'):
-            email_existente = Mercado.query.filter_by(email=mercado_data['email']).first()
-            if not email_existente: mercado.email = mercado_data['email']
+            novo_email = str(mercado_data['email'])
+            verificar_email = Mercado.query.filter_by(email=novo_email).first()
+            if not verificar_email: mercado.email = novo_email
             else: raise MercadoException("Email já cadastrado")
+        
         if mercado_data.get('celular'):
-            celular_existente = Mercado.query.filter_by(celular=mercado_data['celular']).first()
-            if not celular_existente: mercado.celular = mercado_data['celular']
+            novo_celular = str(mercado_data['celular'])
+            verificar_celular = Mercado.query.filter_by(celular=novo_celular).first()
+            if not verificar_celular: mercado.celular = novo_celular
             else: raise MercadoException("Celular já cadastrado")
+        
         if mercado_data.get('senha'):
             nova_senha = bcrypt.hashpw(str(mercado_data['senha']).encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             mercado.senha = nova_senha
@@ -196,14 +187,7 @@ class SellerService:
 
         db.session.commit()
         
-        return {
-            'id': mercado.id,
-            'nome': mercado.nome,
-            'cnpj': mercado.cnpj,
-            'email': mercado.email,
-            'celular': mercado.celular,
-            'status': mercado.status
-        }
+        return ReturnSeller.sellers(mercado)
 
     @staticmethod
     def verificar_sms(data):

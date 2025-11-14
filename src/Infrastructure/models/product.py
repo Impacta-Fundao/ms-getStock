@@ -16,13 +16,3 @@ class Produto(db.Model):
     mercado = relationship("Mercado", back_populates="produtos")
 
     vendas = relationship("Venda", back_populates="produtos")
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "nome": self.nome,
-            "preco": self.preco,
-            "quantidade": self.quantidade,
-            "imagem": self.imagem,
-            "status": self.status
-        }
