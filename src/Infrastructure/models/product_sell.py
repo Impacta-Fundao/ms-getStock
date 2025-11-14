@@ -16,12 +16,3 @@ class Venda(db.Model):
 
     seller_id = (Column(Integer, ForeignKey("mercados.id", ondelete="CASCADE"), nullable=False))
     mercado = relationship("Mercado", back_populates="vendas")
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "preco_venda": self.preco_venda,
-            "quantidade": self.quantidade,
-            "total_venda": self.total_venda,
-            "data_venda": self.data_venda.strftime("%Y-%m-%d %H:%M:%S") if self.data_venda else None
-        }

@@ -2,6 +2,7 @@ from flask_jwt_extended import get_jwt_identity
 from datetime import datetime
 from src.Infrastructure.models.product_sell import Venda
 from src.Infrastructure.models.product import Produto
+from src.utils.return_service import ReturnSale
 from src import db
 
 class SaleException(Exception):
@@ -47,7 +48,9 @@ class SaleService:
         db.session.add(venda_produto)
         db.session.commit()
 
-        return venda_produto.to_dict()
+        venda_realizada = Venda.query.order_by(Venda.id.desc()).first()
+        
+        return ReturnSale.sales(venda_realizada)
 
     @staticmethod
     def listar_vendas():
@@ -56,14 +59,7 @@ class SaleService:
         
         if not vendas: raise SaleException("Não foram encontradas vendas realizadas para este mercado")
         
-        return [{
-            "id": venda.id,
-            "produto_id": venda.produto_id,
-            "preco_venda": venda.preco_venda,
-            "quantidade": venda.quantidade,
-            "total_venda": venda.total_venda,
-            "data_venda": venda.data_venda
-        } for venda in vendas]
+        return [ReturnSale.sales(venda) for venda in vendas]
     
     @staticmethod
     def listar_venda_id(venda_id):
@@ -72,11 +68,4 @@ class SaleService:
 
         if not venda: raise SaleException("Venda não encontrada ou não pertence a este mercado")
 
-        return {
-            "id": venda.id,
-            "produto_id": venda.produto_id,
-            "preco_venda": venda.preco_venda,
-            "quantidade": venda.quantidade,
-            "total_venda": venda.total_venda,
-            "data_venda": venda.data_venda
-        }
+        return ReturnSale.sales(venda)
