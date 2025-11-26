@@ -32,3 +32,13 @@ class SaleController:
             return make_response(jsonify({"message": f"Erro ao buscar venda: {str(e)}"}), 400)
         except Exception as e:
             return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
+
+    @staticmethod
+    def inactivate_sale(venda_id):
+        try:
+            SaleService.inativar_venda(venda_id)
+            return make_response(jsonify({"data": "Venda inativada com sucesso"}), 200)
+        except SaleException as e:
+            return make_response(jsonify({"message": f"Erro ao inativar venda: {str(e)}"}), 400)
+        except Exception as e:
+            return make_response(jsonify({"message": f"Erro interno do servidor: {str(e)}"}), 500)
