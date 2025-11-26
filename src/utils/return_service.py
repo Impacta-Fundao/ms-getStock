@@ -32,5 +32,6 @@ class ReturnSale():
             "preco_venda": sale.preco_venda,
             "quantidade": sale.quantidade,
             "total_venda": sale.total_venda,
-            "data_venda": sale.data_venda
+            "data_venda": sale.data_venda,
+            "status": sale.status
         }
