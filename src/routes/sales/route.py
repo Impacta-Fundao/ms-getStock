@@ -18,3 +18,8 @@ def get_id_sale(id):
 @jwt_required()
 def create_sale():
     return SaleController.post_sale()
+
+@sales_bp.route('/sales/<int:id>/inactivate', methods=['PATCH'])
+@jwt_required()
+def inactivate_sale(id):
+    return SaleController.inactivate_sale(id)

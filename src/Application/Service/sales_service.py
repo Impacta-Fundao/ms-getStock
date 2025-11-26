@@ -39,7 +39,8 @@ class SaleService:
             quantidade=quantidade_venda,
             preco_venda=preco_venda,
             total_venda=float(preco_venda * quantidade_venda),
-            data_venda=data_venda
+            data_venda=data_venda,
+            status=True
         )
 
         produto.quantidade -= quantidade_venda
@@ -55,7 +56,7 @@ class SaleService:
     @staticmethod
     def listar_vendas():
         mercado_id = get_jwt_identity()
-        vendas = Venda.query.filter_by(seller_id=mercado_id).all()
+        vendas = Venda.query.filter_by(seller_id=mercado_id, status=True).all()
         
         if not vendas: raise SaleException("Não foram encontradas vendas realizadas para este mercado")
         
@@ -69,3 +70,19 @@ class SaleService:
         if not venda: raise SaleException("Venda não encontrada ou não pertence a este mercado")
 
         return ReturnSale.sales(venda)
+
+    @staticmethod
+    def inativar_venda(venda_id):
+        mercado_id = get_jwt_identity()
+        venda = Venda.query.filter_by(id=venda_id, seller_id=mercado_id).first()
+
+        if not venda: raise SaleException("Venda não encontrada") 
+        if not venda.status: raise SaleException("Venda já inativada")
+
+        venda.status = False
+
+        produto = Produto.query.filter_by(id=venda.produto_id, seller_id=mercado_id).first()
+
+        produto.quantidade += venda.quantidade
+
+        db.session.commit()

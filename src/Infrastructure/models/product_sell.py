@@ -1,5 +1,5 @@
 from src import db
-from sqlalchemy import Column, ForeignKey, Integer, Float, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, Float, DateTime, Boolean
 from sqlalchemy.orm import relationship
 
 class Venda(db.Model):
@@ -10,6 +10,7 @@ class Venda(db.Model):
     preco_venda = (Column(Float, nullable=False))
     total_venda = (Column(Float, nullable=False))
     data_venda = (Column(DateTime, nullable=False))
+    status = (Column(Boolean, nullable=False))
 
     produto_id = (Column(Integer, ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False))
     produtos = relationship("Produto", back_populates="vendas")
